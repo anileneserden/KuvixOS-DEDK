@@ -1,0 +1,27 @@
+# ==============================================================================
+# KuvixOS DEDK V2 - Git Ignore Kuralları
+# ==============================================================================
+
+# Derleme Çıktıları (Sadece kaynak kodları repoda kalmalı)
+build/
+bin/
+obj/
+
+# Geçici Nesne ve İkili Dosyalar (Derleyicinin ürettikleri)
+*.o
+*.a
+*.so
+*.kde
+*.bin
+*.img
+*.iso
+
+# Geliştirme Ortamı ve Editör Kalıntıları
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+
+# Log Dosyaları
+*.log
