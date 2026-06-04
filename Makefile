@@ -31,7 +31,8 @@ TARGET    = $(BUILD_DIR)/desktop.kde
 
 CPP_SRCS = examples/desktop/main.cpp \
            src/graphics/Framebuffer.cpp \
-           src/runtime/Runtime.cpp
+           src/graphics/Grid.cpp \
+		   src/runtime/Runtime.cpp
 
 C_SRCS   = src/lib/string.c
 
