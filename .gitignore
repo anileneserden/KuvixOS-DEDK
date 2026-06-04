@@ -25,3 +25,6 @@ obj/
 
 # Log Dosyaları
 *.log
+
+# Diğer Geçici ve Gereksiz Dosyalar
+*.txt
