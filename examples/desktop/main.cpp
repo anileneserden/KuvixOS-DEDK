@@ -1,7 +1,13 @@
-// examples/desktop/main.cpp
 #include <kernel/drivers/video/de_api.h>
-#include <graphics/Framebuffer.hpp>
-#include <graphics/Grid.hpp>
+
+// --- KUVIXOS V2 STRING HİLESİ MAKROSU ---
+// Flat binary formatında .rodata adres kaymasını engellemek için 
+// string değerini dinamik olarak işlemci yığınında (stack) oluşturur.
+#define DE_DRAW_TEXT(api_ptr, x, y, literal_str, color) \
+    do { \
+        char _stack_str[] = literal_str; \
+        (api_ptr)->draw_text((x), (y), _stack_str, (color)); \
+    } while(0)
 
 extern "C" __attribute__((section(".text._start"))) void _start(DE_API* api) {
     // Güvenlik Kontrolü: API boş gelirse sistemi kilitle
@@ -9,46 +15,26 @@ extern "C" __attribute__((section(".text._start"))) void _start(DE_API* api) {
         while(1) { asm volatile("hlt"); }
     }
 
-    // Ekran boyutlarını doğrudan kernel yapısından alıyoruz
-    int screen_width = api->screen_width;
-    int screen_height = api->screen_height;
-    
-    // Framebuffer modülünü başlat
-    Framebuffer::init(screen_width, screen_height, api);
-    
-    // Grid sistemini başlatıyoruz:
-    // Hücre boyutu: 64x64 piksel, Boşluk (Spacing): 24 piksel, Üst panel marjı: 40 piksel
-    DesktopGrid::init(screen_width, screen_height, 64, 24, 40);
+    // 1. Arka Planı Çiz (Modern Koyu Tema: Gece Mavisi)
+    api->clear(0x1E1E2E);
 
-    // 1. Masaüstü Arka Planını Çiz (KuvixOS Gece Mavisi)
-    Framebuffer::clear(0x1A2B3C);
+    // 2. Üst Bar / Paneli Çiz (Ekran genişliğinde, 40 piksel yüksekliğinde, Koyu Gri)
+    api->draw_rect(0, 0, api->screen_width, 40, 0x252538);
 
-    // 2. Üst Bar / Paneli Çiz (Koyu Gri)
-    Framebuffer::draw_rectangle(0, 0, screen_width, 40, 0x2D2D2D);
+    // 3. İlk Test İkonunu Çiz (50x50 boyutunda modern bir mavi kare)
+    api->draw_rect(37, 60, 50, 50, 0x89B4FA);
 
-    // 3. SİMÜLASYON: 5 Farklı rengi olan sahte masaüstü kısayol ikonları tanımlıyoruz
-    // Yarın bir gün .desktop dosyalarını okuduğumuzda bu döngü dinamik olacak
-    uint32_t icon_colors[] = {
-        0x2ECC71, // Yeşil İkon (Örn: Dosya Yöneticisi)
-        0xE74C3C, // Kırmızı İkon (Örn: Tarayıcı/Terminal)
-        0x3498DB, // Mavi İkon (Örn: Sistem Ayarları)
-        0xF1C40F, // Sarı İkon (Örn: Hesap Makinesi)
-        0x9B59B6  // Mor İkon (Örn: KuvixOS Mağaza)
-    };
+    // 4. İkonun Altına Metin Bas (Yeni Güvenli Makro İle)
+    // Artık char array tanımlama ameleliği bitti, doğrudan tırnak içinde yazabilirsin!
+    DE_DRAW_TEXT(api, 32, 120, "Terminal", 0xFFFFFF);
 
-    // İkonları grid mimarisine göre ekrana yerleştiriyoruz
-    for (int i = 0; i < 5; i++) {
-        // Matematiksel olarak i. indeks için ekrandaki güvenli (X, Y) koordinatını iste
-        Point icon_pos = DesktopGrid::get_slot_position(i);
-        
-        // Grid'den dönen koordinata 64x64 boyutunda ikon karelerini çiziyoruz
-        Framebuffer::draw_rectangle(icon_pos.x, icon_pos.y, 64, 64, icon_colors[i]);
-    }
+    // Örnek: Üst bara saat veya sistem sürümü eklemek istersen:
+    DE_DRAW_TEXT(api, api->screen_width - 130, 15, "KuvixOS V2.0", 0xA0A0A0);
 
-    // 4. Sahnemizi VRAM'e bas ve ekranı tazelet
-    Framebuffer::present();
+    // 5. Sahnemizi VRAM'e yansıt (Present)
+    api->update_display();
 
-    // İşlemciyi uyku modunda tutarak masaüstünü ekranda kilitle
+    // İşlemciyi uyku modunda tutarak ekranı bu şekilde kilitle
     while(1) { 
         asm volatile("hlt"); 
     }
