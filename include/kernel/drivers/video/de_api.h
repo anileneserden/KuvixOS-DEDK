@@ -1,4 +1,3 @@
-// include/kernel/de_api.h
 #pragma once
 #include <stdint.h>
 
@@ -12,6 +11,7 @@ typedef void (*de_draw_rect_t)(int x, int y, int w, int h, uint32_t color);
 typedef void (*de_draw_text_t)(int x, int y, const char* text, uint32_t color);
 typedef void (*de_update_display_t)(void);
 typedef void (*de_log_t)(const char* str);
+typedef void (*de_get_time_t)(char* buffer);
 
 typedef struct {
     int screen_width;
@@ -23,6 +23,7 @@ typedef struct {
     de_draw_text_t draw_text;
     de_update_display_t update_display;
     de_log_t log;
+    de_get_time_t get_time;
 } DE_API;
 
 #ifdef __cplusplus
